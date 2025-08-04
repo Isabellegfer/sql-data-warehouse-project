@@ -16,16 +16,16 @@ INSERT INTO silver.crm_cust_info (
 SELECT 
 [cst_id]
 ,[cst_key]
-,TRIM([cst_firstname]) [cst_firstname]      -- Data cleansing
-,TRIM([cst_lastname]) [cst_lastname]        -- Data cleansing
+,TRIM([cst_firstname]) [cst_firstname]      				-- Data cleansing
+,TRIM([cst_lastname]) [cst_lastname]        				-- Data cleansing
 ,CASE WHEN UPPER(TRIM(cst_marital_status)) = 'M' THEN 'Married' 
       WHEN UPPER(TRIM(cst_marital_status)) = 'S' THEN 'Single' 
       ELSE 'n/a'
- END cst_marital_status                     -- Data normalization or standartization
+ END cst_marital_status                     				-- Data normalization or standartization
 ,CASE WHEN UPPER(TRIM(cst_gndr)) = 'M' THEN ' Male' 
       WHEN UPPER(TRIM(cst_gndr)) = 'F' THEN ' Female' 
       ELSE 'n/a'
- END [cst_gndr]                             -- Data normalization or standartization
+ END [cst_gndr]                             				-- Data normalization or standartization
 ,[cst_create_date] 
 
 FROM(
@@ -50,21 +50,24 @@ INSERT INTO silver.crm_prd_info (
 ,[prd_end_dt]
 )
 
+
 SELECT 
 [prd_id]
-,REPLACE(SUBSTRING([prd_key],1,5), '-', '_') as cat_id
-,SUBSTRING([prd_key],7,LEN(prd_key)) as prd_key
-,[prd_nm],ISNULL([prd_cost],0) as [prd_cost]
+,REPLACE(SUBSTRING([prd_key],1,5), '-', '_') as cat_id		-- Derived Column: extract Category ID
+,SUBSTRING([prd_key],7,LEN(prd_key)) as prd_key			-- Derived Column: extract Product Key
+,[prd_nm]
+,ISNULL([prd_cost],0) as [prd_cost]				-- Handling missing information
 ,CASE UPPER(TRIM([prd_line])) 
 	  WHEN 'R' THEN 'Road'
 	  WHEN 'S' THEN 'Other Sales'
 	  WHEN 'M' THEN 'Mountain'
 	  WHEN 'T' THEN 'Touring'
-ELSE 'n/a' END
-as [prd_line]
-,CAST([prd_start_dt] AS DATE) AS [prd_start_dt]
-,CAST(DATEADD(day, -1, LEAD(prd_start_dt) OVER (PARTITION BY prd_key ORDER BY prd_start_dt)) AS DATE) AS prd_end_dt
+	  ELSE 'n/a' 
+END as [prd_line]						-- Normalization and handling missing data a 	
+,CAST([prd_start_dt] AS DATE) AS [prd_start_dt]			-- Data type casting
+,CAST(DATEADD(day, -1, LEAD(prd_start_dt) OVER (PARTITION BY prd_key ORDER BY prd_start_dt)) AS DATE) AS prd_end_dt  -- Data Enrichment: adding new relevant data to the DS - calculating end date as one day before next start date
 FROM [DataWarehouse].[bronze].[crm_prd_info]
+ORDER BY 1
 
 
 

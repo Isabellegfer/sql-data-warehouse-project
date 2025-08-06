@@ -1,7 +1,8 @@
 /************************************************************************
 ****  TRANSFERING AND TRANSFORMING DATA FROM BRONZE TO SILVER LAYER  ****
 
-/******** TABLE crm_cust_info ********/
+/*************************************************/
+>> TABLE crm_cust_info
 
 INSERT INTO silver.crm_cust_info (
 [cst_id]
@@ -36,8 +37,8 @@ FROM(
 ) a
 WHERE ranked_row = 1                        -- Keeping only the most recent record per customer
 
-
-/******** TABLE crm_prd_info ********/
+/*************************************************/
+>> TABLE crm_prd_info
 
 INSERT INTO silver.crm_prd_info (
 [prd_id]
@@ -70,7 +71,8 @@ FROM [DataWarehouse].[bronze].[crm_prd_info]
 ORDER BY 1
 
 
-/******** TABLE crm_sales_details ********/
+/*************************************************/
+>> TABLE crm_sales_details
 
 >> LISTA DE PROBLEMAS ENCONTRADOS E TRATADOS
 [sls_order_dt] 
@@ -124,6 +126,41 @@ END	AS [sls_sales]
 	ELSE [sls_price]
 END	AS [sls_price]
 FROM [DataWarehouse].[bronze].[crm_sales_details]
+
+/*************************************************/
+>> TABLE erp_cust_az12
+
+>> LISTA DE PROBLEMAS ENCONTRADOS E TRATADOS
+[cid]
+Chave não coincide com chave da tabela crm_cust_info, remover prefixo
+Validar se todas as chaves de ambas tabelas coincidem
+
+[gen]
+Padronizar para Male, Female ou n/a
+
+[bdate]
+Datas no futuro e também com mais de 100 anos > colocar a NULL
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+INSERT INTO [DataWarehouse].[silver].[erp_cust_az12]
+([cid]
+,[bdate]
+,[gen]
+)
+
+SELECT 
+CASE WHEN [cid] LIKE 'NAS%' THEN REPLACE([cid],'NAS','')
+	 ELSE [cid]
+END AS [cid]
+,CASE WHEN [bdate] > GETDATE() OR [bdate]<cast( cast(19100101 as varchar) as date) THEN NULL
+	  ELSE [bdate]
+END AS [bdate]
+,CASE WHEN UPPER(TRIM([gen])) IN('M','MALE') THEN 'Male'
+	  WHEN UPPER(TRIM([gen])) IN('F','FEMALE') THEN 'Female'
+	  ELSE 'n/a'
+END [gen]
+FROM [DataWarehouse].[bronze].[erp_cust_az12]
+
 
 
 /*********************************************************

@@ -72,6 +72,20 @@ ORDER BY 1
 
 /******** TABLE crm_sales_details ********/
 
+>> LISTA DE PROBLEMAS ENCONTRADOS E TRATADOS
+[sls_order_dt] 
+campos a 0, len()>8 ou datas inexistentes
+Resolução: clientes disseram que vão lidar com o erro a nível de sistema, então não iremos tratálos, apenas deixá-los a NULL
+
+[sls_sales]
+valores nulos, negativos, que não representam a multiplicação entre qtt e price
+Resolução: inferir valores corretos
+
+[sls_price]
+valores nulos, negativos, que não representam a divisão entre sales e qtt
+Resolução: inferir valores corretos
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 INSERT INTO [DataWarehouse].[silver].[crm_sales_details](
 [sls_ord_num]
 ,[sls_prd_key]

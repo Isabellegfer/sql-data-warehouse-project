@@ -1,6 +1,8 @@
 /************************************************************************
 ****  TRANSFERING AND TRANSFORMING DATA FROM BRONZE TO SILVER LAYER  ****
 
+Always analyse "data_integration.png" image before applying changes to evaluate if primary and foreing keys are coincident
+
 /*************************************************/
 >> TABLE crm_cust_info
 

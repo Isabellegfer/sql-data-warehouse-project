@@ -164,6 +164,31 @@ END [gen]
 FROM [DataWarehouse].[bronze].[erp_cust_az12]
 
 
+/*************************************************/
+>> TABLE [silver].[erp_loc_a101]
+
+>> LISTA DE PROBLEMAS ENCONTRADOS E TRATADOS
+[cid]
+Chave não coincide com a cst_key da tabela crm_cust_info, remover sinal '-'
+Validar se todas as chaves de ambas tabelas coincidem
+
+[cntry]
+Padronizar países, substituir nulos e brancos por 'n/a'
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+INSERT INTO [silver].[erp_loc_a101] (
+[cid]
+,[cntry]
+)
+SELECT 
+REPLACE([cid],'-','') AS [cid]
+,CASE WHEN UPPER(TRIM([cntry])) ='DE' THEN 'Germany'
+	  WHEN UPPER(TRIM([cntry])) IN('USA','US') THEN 'United States'
+	  WHEN UPPER(TRIM([cntry])) =' ' OR [cntry] IS NULL THEN 'n/a'
+	  ELSE TRIM([cntry])
+END AS [cntry]
+FROM [bronze].[erp_loc_a101]
+
 
 /*********************************************************
 ****  CLEASING DATA QUERIES - CHECKS ON SILVER LAYER  ****
@@ -189,5 +214,9 @@ SELECT *
 FROM bronze.crm_prd_info
 WHERE prd_start_dt > prd_end_dt
 or [prd_start_dt]>20500101 OR [prd_start_dt]<20000101
+
+-- Validate if keys from both tables match
+SELECT * FROM [silver].[erp_loc_a101]
+where cid IN(select DISTINCT cst_key from [silver].[crm_cust_info])
 
 /***************************************************************
